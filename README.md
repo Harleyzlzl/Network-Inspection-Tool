@@ -1,4 +1,6 @@
 # 网络系统自动化巡检工具
+The network automation inspection system is a platform specially designed for network administrators to automatically check and monitor the status of network devices. The system supports multiple types of network devices (such as routers, switches, firewalls, etc.) and can execute preset commands regularly and generate reports.
+
 
 一个基于Python的网络系统自动化巡检工具，采用前后端分离架构设计。
 
@@ -10,6 +12,13 @@
 - 巡检结果的展示与分析
 - 灵活的配置选项和扩展能力
 
+## Function features
+
+- Support network equipment inspection for multiple device manufacturers and types.
+- Equipment information entry and management.
+- Creation and scheduling of inspection tasks.
+- Display and analysis of inspection results.
+- Flexible configuration options and expansion capabilities.
 ## 技术栈
 
 ### 后端
