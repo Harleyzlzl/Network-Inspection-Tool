@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.name }} - 巡检报告</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .report-header h1 {
+            margin-bottom: 10px;
+            color: #1890ff;
+        }
+        .report-info {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .report-info p {
+            margin: 5px 0;
+        }
+        .stats-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            flex: 1;
+            margin: 0 10px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card.success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        .stat-card.warning {
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+        }
+        .stat-card.error {
+            background-color: #fff1f0;
+            border: 1px solid #ffa39e;
+        }
+        .stat-card.total {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+        }
+        .device-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .device-header {
+            background-color: #f0f2f5;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .device-header h3 {
+            margin: 0;
+        }
+        .device-info {
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .device-info p {
+            margin: 5px 20px 5px 0;
+        }
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .command-table th, .command-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        .command-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .status-success {
+            color: #52c41a;
+        }
+        .status-warning {
+            color: #faad14;
+        }
+        .status-error {
+            color: #f5222d;
+        }
+        .output-content {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h1>{{ report.name }}</h1>
+        <p>生成时间: {{ report.created_at|date:"Y-m-d H:i:s" }}</p>
+    </div>
+
+    <div class="report-info">
+        <h2>任务信息</h2>
+        <p><strong>任务名称:</strong> {{ task.name }}</p>
+        <p><strong>创建者:</strong> {{ task.creator.username }}</p>
+        <p><strong>创建时间:</strong> {{ task.created_at|date:"Y-m-d H:i:s" }}</p>
+        <p><strong>开始时间:</strong> {{ task.started_at|date:"Y-m-d H:i:s" }}</p>
+        <p><strong>结束时间:</strong> {{ task.finished_at|date:"Y-m-d H:i:s" }}</p>
+        <p><strong>状态:</strong> {{ task.get_status_display }}</p>
+        <p><strong>描述:</strong> {{ task.description|default:"无" }}</p>
+    </div>
+
+    <h2>统计信息</h2>
+    <div class="stats-section">
+        <div class="stat-card total">
+            <h3>设备总数</h3>
+            <p class="stat-value">{{ stats.total_devices }}</p>
+        </div>
+        <div class="stat-card success">
+            <h3>成功</h3>
+            <p class="stat-value">{{ stats.success_devices }}</p>
+        </div>
+        <div class="stat-card warning">
+            <h3>警告</h3>
+            <p class="stat-value">{{ stats.warning_devices }}</p>
+        </div>
+        <div class="stat-card error">
+            <h3>错误</h3>
+            <p class="stat-value">{{ stats.error_devices }}</p>
+        </div>
+    </div>
+
+    <h2>设备巡检结果</h2>
+    {% for device_result in device_results %}
+    <div class="device-section">
+        <div class="device-header">
+            <h3>{{ device_result.device.name }} ({{ device_result.device.ip_address }})</h3>
+        </div>
+        <div class="device-info">
+            <p><strong>设备类型:</strong> {{ device_result.device.device_type.name }}</p>
+            <p><strong>厂商:</strong> {{ device_result.device.vendor.name }}</p>
+            <p><strong>状态:</strong> {{ device_result.device.get_status_display }}</p>
+        </div>
+        <table class="command-table">
+            <thead>
+                <tr>
+                    <th>命令</th>
+                    <th>状态</th>
+                    <th>输出</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for command in device_result.commands %}
+                <tr>
+                    <td>{{ command.command }}</td>
+                    <td class="status-{{ command.status }}">
+                        {% if command.status == 'success' %}
+                            成功
+                        {% elif command.status == 'warning' %}
+                            警告
+                        {% else %}
+                            错误
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if command.output %}
+                            <div class="output-content">{{ command.output }}</div>
+                        {% elif command.error_message %}
+                            <div class="output-content status-error">{{ command.error_message }}</div>
+                        {% else %}
+                            无输出
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% empty %}
+    <p>没有找到任何巡检结果</p>
+    {% endfor %}
+
+    <footer style="margin-top: 50px; text-align: center; color: #999; font-size: 12px;">
+        <p>此报告由网络系统自动化巡检工具生成</p>
+    </footer>
+</body>
+</html> 
