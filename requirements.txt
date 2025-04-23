@@ -1,0 +1,11 @@
+Django==4.2.5
+djangorestframework==3.14.0
+netmiko==4.2.0
+python-dotenv==1.0.0
+drf-yasg==1.21.7
+paramiko==3.3.1
+celery==5.3.4
+redis==5.0.1
+psycopg2-binary
+django-cors-headers
+gunicorn
